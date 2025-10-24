@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phone Auth — Rob's Bagstore</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .card { max-width: 420px; margin: 0 auto; padding: 18px; border: 1px solid #ddd; border-radius: 8px; }
+    input { width:100%; padding:8px; margin:8px 0; box-sizing:border-box; }
+    button { padding:10px 14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Create account — Phone verification</h2>
+    <div id="step-phone">
+      <label>Phone number (include country code):</label>
+      <input id="phone-number" placeholder="+639171234567" />
+      <div id="recaptcha-container"></div>
+      <button id="send-otp-btn">Send OTP</button>
+    </div>
+
+    <div id="step-otp" style="display:none;">
+      <label>Enter OTP code:</label>
+      <input id="otp-code" placeholder="123456" />
+      <button id="verify-otp-btn">Verify OTP & Create Account</button>
+    </div>
+
+    <p style="font-size:0.9em;color:#666">After verification you'll be redirected to <strong>index.html</strong>.</p>
+  </div>
+
+  <script src="firebase.js"></script>
+  <script src="phone-auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rob's Bagstore — Products</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    #product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .product-img {
+      height: 200px;
+      object-fit: cover;
+      border-top-left-radius: .5rem;
+      border-top-right-radius: .5rem;
+    }
+    .price {
+      font-weight: 700;
+      color: #198754;
+    }
+    .old-price {
+      text-decoration: line-through;
+      color: gray;
+      margin-right: 6px;
+      font-weight: normal;
+    }
+    body {
+      background-color: #f8f9fa;
+    }
+    .cart-badge {
+      position: absolute;
+      top: 8px;
+      right: 6px;
+      background: red;
+      color: white;
+      font-size: 0.75rem;
+      border-radius: 50%;
+      padding: 3px 6px;
+    }
+    /* Toast style */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1055;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-white shadow-sm fixed-top">
+    <div class="container position-relative">
+      <a class="navbar-brand fw-bold" href="home.html">Rob's Bagstore</a>
+      <div class="ms-auto d-flex align-items-center">
+        <a href="cart.html" class="btn btn-outline-primary position-relative me-2">
+          🛒 Cart
+          <span id="cart-count" class="cart-badge" style="display:none;">0</span>
+        </a>
+        <a href="profile.html" class="btn btn-outline-secondary">👤 Profile</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-5" style="margin-top:80px;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <h2>All Products</h2>
+      <div class="d-flex gap-2 flex-wrap">
+        <input id="search" class="form-control form-control-sm" placeholder="Search products..." style="min-width:200px;">
+        <select id="category" class="form-select form-select-sm">
+          <option value="All">All</option>
+          <option>Backpack</option>
+          <option>Sling Bag</option>
+          <option>Shoulder Bag</option>
+          <option>Hand Bag</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="product-grid"></div>
+  </main>
+
+  <!-- Product Details Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="modalTitle" class="modal-title"></h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <img id="modalImg" src="" class="img-fluid rounded mb-3" alt="">
+          <p id="modalDesc"></p>
+          <p><strong>Rating:</strong> ⭐⭐⭐⭐☆ (4.2/5)</p>
+          <p><span class="old-price" id="modalOldPrice"></span><span class="price" id="modalNewPrice"></span></p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-primary" id="modalAddCart">Add to Cart</button>
+          <button class="btn btn-success" id="modalBuyNow">Buy Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-container">
+    <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          ✅ Item added to cart!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const PRODUCTS = [
+      {"id":"p1","name":"Nomad Travel Backpack","category":"Backpack","price":2499,"discount":10,"img":"travel.jpg","desc":"Water-resistant 20L travel backpack."},
+      {"id":"p2","name":"City Sling Bag","category":"Sling Bag","price":899,"discount":5,"img":"Slingbag.jpg","desc":"Compact sling for daily essentials."},
+      {"id":"p3","name":"Classic Shoulder Tote","category":"Shoulder Bag","price":1599,"discount":15,"img":"shoulder.jpg","desc":"Elegant shoulder tote in faux leather."},
+      {"id":"p4","name":"Urban Handbag","category":"Hand Bag","price":1199,"discount":20,"img":"handbag.jpg","desc":"Stylish handbag with inner pockets."},
+      {"id":"p5","name":"Canvas Daypack","category":"Backpack","price":749,"discount":10,"img":"daypack.jpg","desc":"Lightweight canvas daypack for school."},
+      {"id":"p6","name":"Crossbody Mini","category":"Sling Bag","price":649,"discount":8,"img":"crossbody.jpg","desc":"Small crossbody with adjustable strap."},
+      {"id":"p7","name":"Executive Leather Satchel","category":"Shoulder Bag","price":3499,"discount":12,"img":"leather.jpg","desc":"Premium satchel for work and meetings."},
+      {"id":"p8","name":"Weekend Carryall","category":"Hand Bag","price":2199,"discount":5,"img":"carryall.jpg","desc":"Spacious carryall for short trips."}
+    ];
+
+    const toastElement = document.getElementById('cartToast');
+    const toast = new bootstrap.Toast(toastElement);
+
+    function showCartToast() {
+      toast.show();
+    }
+
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem('rb_cart') || '[]');
+      const badge = document.getElementById('cart-count');
+      badge.textContent = cart.length;
+      badge.style.display = cart.length > 0 ? 'inline-block' : 'none';
+    }
+
+    function addToCart(id) {
+      let cart = JSON.parse(localStorage.getItem('rb_cart') || '[]');
+      cart.push(id);
+      localStorage.setItem('rb_cart', JSON.stringify(cart));
+      updateCartBadge();
+      showCartToast();
+    }
+
+    function renderProducts(list) {
+      const grid = document.getElementById('product-grid');
+      grid.innerHTML = '';
+      list.forEach(p => {
+        const discountedPrice = (p.price * (1 - p.discount / 100)).toFixed(0);
+        const item = document.createElement('div');
+        item.innerHTML = `
+          <div class="card h-100" data-id="${p.id}">
+            <img src="${p.img}" class="product-img" alt="${p.name}">
+            <div class="card-body d-flex flex-column">
+              <h6>${p.name}</h6>
+              <p class="small text-muted mb-2">${p.desc}</p>
+              <div>
+                <span class="old-price">₱${p.price}</span>
+                <span class="price">₱${discountedPrice}</span>
+              </div>
+              <div class="mt-auto d-flex justify-content-between mt-2">
+                <button class="btn btn-sm btn-outline-primary add-cart" data-id="${p.id}">Add to Cart</button>
+                <button class="btn btn-sm btn-primary buy-now" data-id="${p.id}">Buy Now</button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(item);
+      });
+
+      // Product click for modal
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', function(e){
+          if (e.target.tagName === 'BUTTON') return;
+          const id = this.dataset.id;
+          const p = PRODUCTS.find(x => x.id === id);
+          const newPrice = (p.price * (1 - p.discount / 100)).toFixed(0);
+          document.getElementById('modalTitle').textContent = p.name;
+          document.getElementById('modalImg').src = p.img;
+          document.getElementById('modalDesc').textContent = p.desc;
+          document.getElementById('modalOldPrice').textContent = '₱' + p.price;
+          document.getElementById('modalNewPrice').textContent = '₱' + newPrice;
+          document.getElementById('modalAddCart').onclick = () => addToCart(id);
+          document.getElementById('modalBuyNow').onclick = () => window.location.href = 'checkout.html?product=' + id;
+          new bootstrap.Modal(document.getElementById('productModal')).show();
+        });
+      });
+
+      // Add to cart & buy now buttons
+      document.querySelectorAll('.add-cart').forEach(b => {
+        b.addEventListener('click', function(){
+          addToCart(this.dataset.id);
+        });
+      });
+      document.querySelectorAll('.buy-now').forEach(b => {
+        b.addEventListener('click', function(){
+          window.location.href = 'checkout.html?product=' + this.dataset.id;
+        });
+      });
+    }
+
+    function filterAndRender() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const cat = document.getElementById('category').value;
+      let filtered = PRODUCTS.filter(p => (p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)));
+      if (cat !== 'All') filtered = filtered.filter(p => p.category === cat);
+      renderProducts(filtered);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProducts(PRODUCTS);
+      updateCartBadge();
+      document.getElementById('search').addEventListener('input', filterAndRender);
+      document.getElementById('category').addEventListener('change', filterAndRender);
+    });
+  </script>
+</body>
+</html>
